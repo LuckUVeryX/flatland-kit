@@ -613,7 +613,7 @@ if __name__ == "__main__":
             "n_cities": 2,
             "max_rails_between_cities": 2,
             "max_rails_in_city": 3,
-            "malfunction_rate": 1 / 50,
+            "malfunction_rate": 0,
             "seed": 0
         },
         {
@@ -624,7 +624,7 @@ if __name__ == "__main__":
             "n_cities": 2,
             "max_rails_between_cities": 2,
             "max_rails_in_city": 3,
-            "malfunction_rate": 1 / 50,
+            "malfunction_rate": 0,
             "seed": 0
         },
         {
@@ -635,7 +635,7 @@ if __name__ == "__main__":
             "n_cities": 2,
             "max_rails_between_cities": 2,
             "max_rails_in_city": 3,
-            "malfunction_rate": 1 / 100,
+            "malfunction_rate": 0,
             "seed": 0
         },
         {
@@ -646,7 +646,7 @@ if __name__ == "__main__":
             "n_cities": 3,
             "max_rails_between_cities": 2,
             "max_rails_in_city": 3,
-            "malfunction_rate": 1 / 200,
+            "malfunction_rate": 0,
             "seed": 0
         },
         {
@@ -657,7 +657,7 @@ if __name__ == "__main__":
             "n_cities": 5,
             "max_rails_between_cities": 2,
             "max_rails_in_city": 3,
-            "malfunction_rate": 1 / 200,
+            "malfunction_rate": 0,
             "seed": 0
         },
     ]
