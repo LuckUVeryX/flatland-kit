@@ -596,6 +596,7 @@ if __name__ == "__main__":
     parser.add_argument("--use_fast_tree_observation", help="use FastTreeObs instead of stock TreeObs",
                         action='store_true')
     parser.add_argument("--max_depth", help="max depth", default=2, type=int)
+    # ! Add policies to arguments
     parser.add_argument("--policy",
                         help="policy name [Random]",
                         default="Random")
