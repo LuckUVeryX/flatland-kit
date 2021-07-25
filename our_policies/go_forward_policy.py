@@ -28,9 +28,12 @@ class GoForwardPolicy(LearningPolicy):
         pass
 
     def act(self, handle, state, eps=0.):
-        # * In action_sized reduced
-        # 1 is forward
-        return 1
+        # 0 is Do nothing
+        # 1 is Left
+        # 2 is Forward
+        # 3 is Right
+        # 4 is Stop
+        return 2
 
     def save(self, filename):
         pass
