@@ -29,6 +29,7 @@ from utils.timer import Timer
 
 # ! Import our policies
 from our_policies.random_policy import RandomPolicy
+from our_policies.go_forward_policy import GoForwardPolicy
 
 base_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(base_dir))
@@ -183,10 +184,12 @@ def train_agent(train_params, train_env_params, eval_env_params, obs_params):
     # ! Add Policies here
     if train_params.policy == "Random":
         policy = RandomPolicy(state_size, get_action_size(), train_params)
+    elif train_params.policy == "GoForward":
+        policy = GoForwardPolicy(state_size, get_action_size(), train_params)
 
     # Default policy random
-    if policy is None:
-        policy = RandomPolicy(state_size, get_action_size(), train_params)
+    if train_params.policy is None:
+        policy = GoForwardPolicy(state_size, get_action_size(), train_params)
 
     # Load existing policy
     if train_params.load_policy != "":
@@ -243,7 +246,7 @@ def train_agent(train_params, train_env_params, eval_env_params, obs_params):
             train_env_params.n_agents = n_agents
         else:
             number_of_agents = int(
-                min(n_agents, 1 + np.floor(episode_idx / 200)))
+                min(n_agents, 1 + np.floor(episode_idx / 5)))  # ! Changed from 200
             train_env_params.n_agents = episode_idx % number_of_agents + 1
 
         train_env = create_rail_env(train_env_params, tree_observation)
@@ -551,7 +554,7 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
-        "-n", "--n_episodes", help="number of episodes to run", default=5000, type=int)
+        "-n", "--n_episodes", help="number of episodes to run", default=100, type=int)  # ! Reduced default episode number to 100
     parser.add_argument(
         "--n_agent_fixed", help="hold the number of agent fixed", action='store_true')
     parser.add_argument("-t", "--training_env_config", help="training config id (eg 0 for Test_0)", default=1,
@@ -601,8 +604,8 @@ if __name__ == "__main__":
     parser.add_argument("--max_depth", help="max depth", default=2, type=int)
     # ! Add policies to arguments
     parser.add_argument("--policy",
-                        help="policy name [Random]",
-                        default="Random")
+                        help="policy name [Random, GoForward]",
+                        default="ShortestPath")
     parser.add_argument(
         "--action_size", help="define the action size [reduced,full]", default="full", type=str)
 
