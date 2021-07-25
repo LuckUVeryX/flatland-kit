@@ -1,6 +1,3 @@
-from utils.fast_tree_obs import FastTreeObs
-from utils.observation_utils import normalize_observation
-from utils.timer import Timer
 import os
 import random
 import sys
@@ -12,7 +9,8 @@ from pprint import pprint
 
 import numpy as np
 import psutil
-from flatland.envs.malfunction_generators import malfunction_from_params, MalfunctionParameters
+from flatland.envs.malfunction_generators import (MalfunctionParameters,
+                                                  malfunction_from_params)
 from flatland.envs.observations import TreeObsForRailEnv
 from flatland.envs.predictions import ShortestPathPredictorForRailEnv
 from flatland.envs.rail_env import RailEnv, RailEnvActions
@@ -20,9 +18,14 @@ from flatland.envs.rail_generators import sparse_rail_generator
 from flatland.envs.schedule_generators import sparse_schedule_generator
 from flatland.utils.rendertools import RenderTool
 from torch.utils.tensorboard import SummaryWriter
-
-from utils.agent_action_config import get_flatland_full_action_size, get_action_size, map_actions, map_action, \
-    set_action_size_reduced, set_action_size_full, map_action_policy
+from utils.agent_action_config import (get_action_size,
+                                       get_flatland_full_action_size,
+                                       map_action, map_action_policy,
+                                       map_actions, set_action_size_full,
+                                       set_action_size_reduced)
+from utils.fast_tree_obs import FastTreeObs
+from utils.observation_utils import normalize_observation
+from utils.timer import Timer
 
 # ! Import our policies
 from our_policies.random_policy import RandomPolicy
@@ -179,11 +182,11 @@ def train_agent(train_params, train_env_params, eval_env_params, obs_params):
 
     # ! Add Policies here
     if train_params.policy == "Random":
-        policy = RandomPolicy()
+        policy = RandomPolicy(state_size, get_action_size(), train_params)
 
     # Default policy random
     if policy is None:
-        policy = RandomPolicy()
+        policy = RandomPolicy(state_size, get_action_size(), train_params)
 
     # Load existing policy
     if train_params.load_policy != "":
@@ -604,6 +607,7 @@ if __name__ == "__main__":
         "--action_size", help="define the action size [reduced,full]", default="full", type=str)
 
     training_params = parser.parse_args()
+    # ! Set all malfunction rate to be 0
     env_params = [
         {
             # Test_0
