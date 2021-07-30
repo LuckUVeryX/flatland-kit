@@ -30,6 +30,7 @@ from utils.timer import Timer
 # ! Import our policies
 from our_policies.random_policy import RandomPolicy
 from our_policies.go_forward_policy import GoForwardPolicy
+from our_policies.dddqn import DDDQNPolicy
 
 base_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(base_dir))
@@ -186,6 +187,8 @@ def train_agent(train_params, train_env_params, eval_env_params, obs_params):
         policy = RandomPolicy(state_size, get_action_size(), train_params)
     elif train_params.policy == "GoForward":
         policy = GoForwardPolicy(state_size, get_action_size(), train_params)
+    elif train_params.policy == "dddqn": 
+        policy = DDDQNPolicy(state_size, get_action_size(), train_params)
 
     # Default policy random
     if train_params.policy is None:
@@ -604,7 +607,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_depth", help="max depth", default=2, type=int)
     # ! Add policies to arguments
     parser.add_argument("--policy",
-                        help="policy name [Random, GoForward]",
+                        help="policy name [Random, GoForward, dddqn]",
                         default="ShortestPath")
     parser.add_argument(
         "--action_size", help="define the action size [reduced,full]", default="full", type=str)
