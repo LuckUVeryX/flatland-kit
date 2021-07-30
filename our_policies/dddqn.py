@@ -7,6 +7,7 @@ import numpy as np
 import torch 
 import torch.nn.functional as F 
 import torch.optim as optim
+import torch.nn as nn
 from our_policies.policy import Policy, LearningPolicy
 from our_policies.replay_buffer import ReplayBuffer
 
