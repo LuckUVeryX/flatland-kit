@@ -127,7 +127,7 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
 				action_dict.update({agent: action})
 			policy.end_step(train=False)
 			obs, all_rewards, done, info = env.step(map_action(action_dict))
-			print(action_dict)
+			# print(action_dict)
 			env_renderer.render_env(
 								show=True,
 								frames=False,
@@ -236,7 +236,9 @@ n_nodes = sum([np.power(4, i)
 				for i in range(observation_tree_depth + 1)])
 state_size = n_features_per_node * n_nodes
 policy = DDDQNPolicy(state_size, 5, Namespace(**train_params), evaluation_mode=True)
+'''################## CHANGE YOUR FILE PATH HERE ######################'''
 policy.load("D:\\SUTD\\Term 8 ESD ISTD\\50.021 Artificial Intelligence\\Project\\flatland-kit\\martz_runs\\defaultParams-fixedEval-5000\\210801093939-5000.pth")
+''' Make sure that you don't include the .target and .local extensions, check load method under dddqn policy for details '''
 
 scores, completions, nb_steps_eval = eval_policy(eval_env,
 												tree_observation,
