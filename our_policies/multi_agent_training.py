@@ -312,10 +312,10 @@ def train_agent(train_params, train_env_params, eval_env_params, obs_params):
             # Render an episode at some interval
             if train_params.render:
                 env_renderer.render_env(
-                    show=True,
+                    show=False,
                     frames=False,
                     show_observations=False,
-                    show_predictions=False
+                    show_predictions=True
                 )
 
             # Update replay buffer and train agent
@@ -366,8 +366,8 @@ def train_agent(train_params, train_env_params, eval_env_params, obs_params):
         smoothed_normalized_score = np.mean(scores_window)
         smoothed_completion = np.mean(completion_window)
 
-        if train_params.render:
-            env_renderer.close_window()
+        # if train_params.render:
+        #     env_renderer.close_window()
 
         # Print logs
         if episode_idx % checkpoint_interval == 0 and episode_idx > 0:
@@ -553,7 +553,7 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params, eps):
 
             if episode_idx % 2 == 0:
                 env_renderer.render_env(
-                                    show=True,
+                                    show=False,
                                     frames=False,
                                     show_observations=False,
                                     show_predictions=True
@@ -576,8 +576,8 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params, eps):
         completions.append(completion)
 
         nb_steps.append(final_step)
-        if episode_idx % 2 == 0:
-            env_renderer.close_window()
+        # if episode_idx % 2 == 0:
+        #     env_renderer.close_window()
     print(" ✅ Eval: score {:.3f} done {:.1f}%".format(
         np.mean(scores), np.mean(completions) * 100.0))
 
