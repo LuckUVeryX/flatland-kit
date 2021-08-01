@@ -28,9 +28,9 @@ from utils.observation_utils import normalize_observation
 from utils.timer import Timer
 
 # ! Import our policies
-from our_policies.random_policy import RandomPolicy
-from our_policies.go_forward_policy import GoForwardPolicy
-from our_policies.dddqn import DDDQNPolicy
+from random_policy import RandomPolicy
+from go_forward_policy import GoForwardPolicy
+from dddqn import DDDQNPolicy
 
 base_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(base_dir))
@@ -406,7 +406,8 @@ def train_agent(train_params, train_env_params, eval_env_params, obs_params):
                                                              tree_observation,
                                                              policy,
                                                              train_params,
-                                                             obs_params)
+                                                             obs_params,
+                                                             episode_idx)
 
             writer.add_scalar("evaluation/scores_min",
                               np.min(scores), episode_idx)
@@ -496,16 +497,20 @@ def format_action_prob(action_probs):
     return buffer
 
 
-def eval_policy(env, tree_observation, policy, train_params, obs_params):
+def eval_policy(env, tree_observation, policy, train_params, obs_params, eps):
+    print(eps)
     n_eval_episodes = train_params.n_evaluation_episodes
+    # max_steps = 50
     max_steps = env._max_episode_steps
     tree_depth = obs_params.observation_tree_depth
     observation_radius = obs_params.observation_radius
 
+    print(max_steps)
     action_dict = dict()
     scores = []
     completions = []
     nb_steps = []
+    prev_obs = [None] * env.get_num_agents()
 
     for episode_idx in range(n_eval_episodes):
         agent_obs = [None] * env.get_num_agents()
@@ -515,22 +520,46 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
         policy.reset(env)
         final_step = 0
 
+        # Build initial obs
+        for agent in env.get_agent_handles():
+            if obs[agent] is not None:
+                agent_obs[agent] = obs[agent]
+                prev_obs[agent] = obs[agent]
+
+        if episode_idx % 2 == 0:
+            env_renderer = RenderTool(env, gl="PGL")
+            env_renderer.set_new_rail()
         policy.start_episode(train=False)
         for step in range(max_steps - 1):
             policy.start_step(train=False)
+            # print(sum(x is None for x in prev_obs))
             for agent in env.get_agent_handles():
-                if tree_observation.check_is_observation_valid(agent_obs[agent]):
-                    agent_obs[agent] = tree_observation.get_normalized_observation(obs[agent], tree_depth=tree_depth,
-                                                                                   observation_radius=observation_radius)
+                if obs[agent] is not None:
+                    prev_obs[agent] = obs[agent]
+                    agent_obs[agent] = tree_observation.get_normalized_observation(obs[agent], tree_depth=tree_depth, observation_radius=observation_radius)
+                    
+                if obs[agent] is None:
+                    # print(f"{agent} has NONE %%%%%%%%%%%%%%")
+                    agent_obs[agent] = tree_observation.get_normalized_observation(prev_obs[agent], tree_depth=tree_depth, observation_radius=observation_radius)
 
                 action = 0
                 if info['action_required'][agent]:
-                    if tree_observation.check_is_observation_valid(agent_obs[agent]):
-                        action = policy.act(agent, agent_obs[agent], eps=0.0)
+                    action = policy.act(agent, agent_obs[agent], eps=0.0)
+                    
                 action_dict.update({agent: action})
             policy.end_step(train=False)
-            obs, all_rewards, done, info = env.step(map_actions(action_dict))
+            obs, all_rewards, done, info = env.step(map_action(action_dict))
+            # print(action_dict)
 
+            if episode_idx % 2 == 0:
+                env_renderer.render_env(
+                                    show=True,
+                                    frames=False,
+                                    show_observations=False,
+                                    show_predictions=True
+                    )
+
+            # time.sleep(2)
             for agent in env.get_agent_handles():
                 score += all_rewards[agent]
 
@@ -547,7 +576,8 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
         completions.append(completion)
 
         nb_steps.append(final_step)
-
+        if episode_idx % 2 == 0:
+            env_renderer.close_window()
     print(" ✅ Eval: score {:.3f} done {:.1f}%".format(
         np.mean(scores), np.mean(completions) * 100.0))
 
@@ -642,7 +672,7 @@ if __name__ == "__main__":
             "n_agents": 10,
             "x_dim": 30,
             "y_dim": 30,
-            "n_cities": 2,
+            "n_cities": 4,
             "max_rails_between_cities": 2,
             "max_rails_in_city": 3,
             "malfunction_rate": 0,
