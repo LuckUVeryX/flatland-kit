@@ -47,7 +47,7 @@ class DDDQNPolicy(LearningPolicy):
         self.state_size = state_size
         self.action_size = action_size
         self.double_dqn = True
-        self.hidsize = 128
+        self.hidsize = 256
 
         if not evaluation_mode:
             self.hidsize = self.ddqn_parameters.hidden_size
