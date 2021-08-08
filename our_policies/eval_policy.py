@@ -65,7 +65,7 @@ def create_rail_env(env_params, tree_observation):
 		width=x_dim, height=y_dim,
 		rail_generator=sparse_rail_generator(
 			max_num_cities=n_cities,
-			grid_mode=False,
+			grid_mode=True,
 			max_rails_between_cities=max_rails_between_cities,
 			max_rails_in_city=max_rails_in_city
 		),
@@ -77,10 +77,10 @@ def create_rail_env(env_params, tree_observation):
 		random_seed=seed
 	)
 
-def eval_policy(env, tree_observation, policy, train_params, obs_params):
+def eval_policy(env, tree_observation, policy, train_params, obs_params, render_step):
 	n_eval_episodes = train_params.n_evaluation_episodes
-	max_steps = 50
-	# max_steps = env._max_episode_steps
+	# max_steps = 50
+	max_steps = env._max_episode_steps
 	tree_depth = obs_params.observation_tree_depth
 	observation_radius = obs_params.observation_radius
 
@@ -105,8 +105,9 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
 				agent_obs[agent] = obs[agent]
 				prev_obs[agent] = obs[agent]
 
-		env_renderer = RenderTool(eval_env, gl="PGL")
-		env_renderer.set_new_rail()
+		if episode_idx % render_step == 0:
+			env_renderer = RenderTool(eval_env, gl="PGL")
+			env_renderer.set_new_rail()
 		policy.start_episode(train=False)
 		for step in range(max_steps - 1):
 			policy.start_step(train=False)
@@ -117,7 +118,7 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
 					agent_obs[agent] = tree_observation.get_normalized_observation(obs[agent], tree_depth=tree_depth, observation_radius=observation_radius)
 					
 				if obs[agent] is None:
-					print(f"{agent} has NONE %%%%%%%%%%%%%%")
+					# print(f"{agent} has NONE %%%%%%%%%%%%%%")
 					agent_obs[agent] = tree_observation.get_normalized_observation(prev_obs[agent], tree_depth=tree_depth, observation_radius=observation_radius)
 
 				action = 0
@@ -128,12 +129,13 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
 			policy.end_step(train=False)
 			obs, all_rewards, done, info = env.step(map_action(action_dict))
 			# print(action_dict)
-			env_renderer.render_env(
-								show=True,
-								frames=False,
-								show_observations=False,
-								show_predictions=True
-                )
+			if episode_idx % render_step == 0:
+				env_renderer.render_env(
+									show=True,
+									frames=False,
+									show_observations=False,
+									show_predictions=True
+					)
 
 			# time.sleep(2)
 			for agent in env.get_agent_handles():
@@ -152,7 +154,8 @@ def eval_policy(env, tree_observation, policy, train_params, obs_params):
 		completions.append(completion)
 
 		nb_steps.append(final_step)
-		env_renderer.close_window()
+		if episode_idx % render_step == 0:
+			env_renderer.close_window()
 	print(" ✅ Eval: score {:.3f} done {:.1f}%".format(
 		np.mean(scores), np.mean(completions) * 100.0))
 
@@ -171,8 +174,8 @@ observation_max_path_depth = obs_params["observation_max_path_depth"]
 
 # Evaluation Environment Parameters
 eval_env_params = {'malfunction_rate': 0,
- 'max_rails_between_cities': 2,
- 'max_rails_in_city': 2,
+ 'max_rails_between_cities': 3,
+ 'max_rails_in_city': 3,
  'n_agents': 5,
  'n_cities': 3,
  'seed': 0,
@@ -185,18 +188,18 @@ train_params = {'action_size': 'full',
  'buffer_min_size': 0,
  'buffer_size': 32000,
  'checkpoint_interval': 100,
- 'eps_decay': 0.9975,
- 'eps_end': 0.01,
- 'eps_start': 1.0,
+ 'eps_decay': 0,
+ 'eps_end': 0,
+ 'eps_start': 0,
  'evaluation_env_config': 1,
  'gamma': 0.97,
- 'hidden_size': 128,
+ 'hidden_size': 256,
  'learning_rate': 5e-05,
  'load_policy': '',
  'max_depth': 2,
  'n_agent_fixed': False,
  'n_episodes': 1000,
- 'n_evaluation_episodes': 10,
+ 'n_evaluation_episodes': 100,
  'num_threads': 4,
  'policy': 'dddqn',
  'render': False,
@@ -237,18 +240,20 @@ n_nodes = sum([np.power(4, i)
 state_size = n_features_per_node * n_nodes
 policy = DDDQNPolicy(state_size, 5, Namespace(**train_params), evaluation_mode=True)
 '''################## CHANGE YOUR FILE PATH HERE ######################'''
-policy.load("D:\\SUTD\\Term 8 ESD ISTD\\50.021 Artificial Intelligence\\Project\\flatland-kit\\martz_runs\\defaultParams-fixedEval-5000\\210801093939-5000.pth")
+policy.load("D:\\SUTD\\Term 8 ESD ISTD\\50.021 Artificial Intelligence\\Project\\flatland-kit\\martz_runs\\final\\210807151043-8000.pth")
+# policy.load("D:\\SUTD\\Term 8 ESD ISTD\\50.021 Artificial Intelligence\\Project\\flatland-kit\\martz_runs\\defaultParams-B2S-2-5000\\210802100734-5000.pth")
 ''' Make sure that you don't include the .target and .local extensions, check load method under dddqn policy for details '''
 
 scores, completions, nb_steps_eval = eval_policy(eval_env,
 												tree_observation,
 												policy,
 												Namespace(**train_params),
-												Namespace(**obs_params))
+												Namespace(**obs_params),
+            									20)
 scores_list.append(scores)
 completions_list.append(completions)
 nb_steps_list.append(nb_steps_eval)
 
-print(scores_list)
-print(completions_list)
-print(nb_steps_list)
+print(np.mean(scores))
+print(np.mean(completions_list))
+print(np.mean(nb_steps_list))

@@ -142,13 +142,13 @@ class RailEnv(Environment):
 
     """
     alpha = 1.0
-    beta = 1.0
+    beta = 2.0
     # Epsilon to avoid rounding errors
     epsilon = 0.01
     invalid_action_penalty = 0  # previously -2; GIACOMO: we decided that invalid actions will carry no penalty
     step_penalty = -1 * alpha
     global_reward = 1 * beta
-    stop_penalty = 0  # penalty for stopping a moving agent
+    stop_penalty = -2  # penalty for stopping a moving agent
     start_penalty = 0  # penalty for starting a stopped agent
 
     def __init__(self,
