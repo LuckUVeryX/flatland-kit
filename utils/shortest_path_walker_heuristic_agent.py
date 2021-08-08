@@ -1,7 +1,7 @@
 import numpy as np
 from flatland.envs.rail_env import RailEnvActions
 
-from reinforcement_learning.policy import Policy
+from our_policies.policy import Policy
 
 
 class ShortestPathWalkerHeuristicPolicy(Policy):

@@ -1,3 +1,12 @@
+from flatland.envs.observations import TreeObsForRailEnv
+from utils.observation_utils import normalize_observation
+from flatland.envs.schedule_generators import sparse_schedule_generator
+from flatland.envs.rail_generators import sparse_rail_generator
+from flatland.envs.rail_env import RailEnv
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+from our_policies.dddqn import DDDQNPolicy
 import random
 import sys
 from argparse import ArgumentParser, Namespace
@@ -7,16 +16,6 @@ from pathlib import Path
 base_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(base_dir))
 
-from reinforcement_learning.dddqn_policy import DDDQNPolicy
-import matplotlib.pyplot as plt
-import numpy as np
-import torch
-
-from flatland.envs.rail_env import RailEnv
-from flatland.envs.rail_generators import sparse_rail_generator
-from flatland.envs.schedule_generators import sparse_schedule_generator
-from utils.observation_utils import normalize_observation
-from flatland.envs.observations import TreeObsForRailEnv
 
 """
 This file shows how to train a single agent using a reinforcement learning approach.
@@ -112,7 +111,8 @@ def train_agent(n_episodes):
     }
 
     # Double Dueling DQN policy
-    policy = DDDQNPolicy(state_size, action_size, Namespace(**training_parameters))
+    policy = DDDQNPolicy(state_size, action_size,
+                         Namespace(**training_parameters))
 
     for episode_idx in range(n_episodes):
         score = 0
@@ -167,7 +167,8 @@ def train_agent(n_episodes):
         eps_start = max(eps_end, eps_decay * eps_start)
 
         # Collection information about training
-        tasks_finished = np.sum([int(done[idx]) for idx in env.get_agent_handles()])
+        tasks_finished = np.sum([int(done[idx])
+                                for idx in env.get_agent_handles()])
         completion_window.append(tasks_finished / max(1, env.get_num_agents()))
         scores_window.append(score / (max_steps * env.get_num_agents()))
         completion.append((np.mean(completion_window)))
@@ -176,7 +177,8 @@ def train_agent(n_episodes):
 
         if episode_idx % 100 == 0:
             end = "\n"
-            torch.save(policy.qnetwork_local, './checkpoints/single-' + str(episode_idx) + '.pth')
+            torch.save(policy.qnetwork_local,
+                       './checkpoints/single-' + str(episode_idx) + '.pth')
             action_count = [1] * action_size
         else:
             end = " "
